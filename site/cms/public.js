@@ -1,0 +1,9 @@
+const $=id=>document.getElementById(id);const esc=cmsEsc;
+const params=new URLSearchParams(location.search);
+if(params.get('jenis'))$('kind').value=params.get('jenis');if(params.get('lang'))$('lang').value=params.get('lang');
+async function render(){const area=$('cards');area.innerHTML='<p>Memuat konten...</p>';if(!cmsReady){area.innerHTML='<p>CMS belum dikonfigurasi. Isi cms/config.js terlebih dahulu.</p>';return;}
+let query=cms.from('cms_entries').select('id,kind,lang,title,slug,excerpt,body,image_url,event_date,created_at').eq('status','published').eq('lang',$('lang').value).order('created_at',{ascending:false}).limit(100);
+if($('kind').value)query=query.eq('kind',$('kind').value);
+const {data,error}=await query;if(error){area.textContent=error.message;return;}area.replaceChildren();if(!data.length){area.innerHTML='<div class="card full">Belum ada konten terbit untuk filter ini.</div>';return;}
+for(const x of data){const card=document.createElement('article');card.className='card';const h=document.createElement('h2');h.textContent=x.title;card.append(h);let meta=document.createElement('p');meta.className='hint';meta.textContent=(cmsKinds[x.kind]||x.kind)+' · '+(x.event_date||x.created_at.slice(0,10));card.append(meta);if(x.image_url&&/^https:\/\//.test(x.image_url)){let img=document.createElement('img');img.src=x.image_url;img.alt=x.title;img.loading='lazy';img.style.cssText='width:100%;max-height:280px;object-fit:cover;border-radius:9px';card.append(img);}let intro=document.createElement('p');intro.textContent=x.excerpt||x.body.slice(0,230);card.append(intro);if(x.body){let more=document.createElement('details');let summary=document.createElement('summary');summary.textContent='Baca selengkapnya';let content=document.createElement('p');content.style.whiteSpace='pre-wrap';content.textContent=x.body;more.append(summary,content);card.append(more);}area.append(card);}}
+$('kind').onchange=render;$('lang').onchange=render;render();
