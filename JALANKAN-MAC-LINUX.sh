@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-cd "$(dirname "$0")/site" || exit 1
-python3 -m http.server 5173
